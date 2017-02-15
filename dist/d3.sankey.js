@@ -311,7 +311,8 @@ d3.sankeyChart = function (data, options) {
     self.height = options.height;
     self.innerWidth = options.width - self.margin.left - self.margin.right;
     self.innerHeight = options.height - self.margin.top - self.margin.bottom;
-
+    self.dynamicLinkColor = options.dynamicLinkColor ? options.dynamicLinkColor : false;
+    self.staticLinkColor = options.staticLinkColor ? options.staticLinkColor : '#000';
     self.formatNumber = d3.format(',.0f');
     self.format = d => `${self.formatNumber(d)}`;
     self.color = d3.scale.category20();
@@ -353,8 +354,13 @@ d3.sankeyChart = function (data, options) {
             .style('stroke-width', d => Math.max(1, d.dy))
             .style({
                 fill: 'none',
-                stroke: '#000',
                 'stroke-opacity': 0.15
+            })
+            .style('stroke', function (d) {
+                let color = self.staticLinkColor ? self.staticLinkColor : '#000';
+                color = self.dynamicLinkColor ? self.color(d.source.name.replace(/ .*/, '')) : color;
+
+                return color;
             })
             .sort((a, b) => b.dy - a.dy);
 
