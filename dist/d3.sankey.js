@@ -303,6 +303,9 @@ d3.sankeyChart = function (data, options) {
 
     var self = this;
 
+    self.nodeWidth = options.nodeWidth ? options.nodeWidth : 15;
+    self.nodePadding = options.nodePadding ? options.nodePadding : 10;
+
     self.margin = options.margin;
     self.width = options.width;
     self.height = options.height;
@@ -330,8 +333,8 @@ d3.sankeyChart = function (data, options) {
     };
     self.initCore = function () {
         sankey = new sankeyCore()
-            .nodeWidth(15)
-            .nodePadding(10)
+            .nodeWidth(self.nodeWidth)
+            .nodePadding(self.nodePadding)
             .size([self.innerWidth, self.innerHeight]);
 
         sankey
