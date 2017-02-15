@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sankey AngularJS 1 Directive</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8" type="text/javascript"></script>
+    <script src="dist/d3.sankey.js" charset="utf-8" type="text/javascript"></script>
+</head>
+<body ng-app="SankeyApp" ng-controller="MainController">
+<ng-sankey id="sankeyChart" data-options="{{options}}"
+           data-source="{{data}}"></ng-sankey>
+</body>
+
+<script>
+    var app = angular.module('SankeyApp', []);
+
+    app.directive('ngSankey', function () {
+        let id = 'ng-sankey-' + parseInt(Math.random() * 1000);
+        let chart, data, options = null;
+        return {
+            restrict: 'E',
+            template: '<div id="' + id + '"><canvas></canvas><svg></svg></div>',
+            link: function (scope, iElement, iAttrs) {
+                options = JSON.parse(iAttrs.options);
+                options.chart = '#' + id;
+
+                data = JSON.parse(iAttrs.source);
+                chart = new d3.sankeyChart(data, options);
+            }
+        }
+    });
+
+    app.controller('MainController', ['$scope', function ($scope) {
+        $scope.options = {
+            width: 960,
+            height: 500,
+            nodeWidth: 15,
+            nodePadding: 10,
+            dynamicLinkColor: true,
+            margin: {top: 1, right: 1, bottom: 6, left: 1}
+        };
+        $scope.data = {
+            nodes: [
+                {'node': 0, 'name': 'Junior'},
+                {'node': 1, 'name': 'Mid Senior'},
+                {'node': 2, 'name': 'Senior'},
+                {'node': 3, 'name': 'Tech Lead'},
+                {'node': 4, 'name': 'CTO'},
+                {'node': 5, 'name': 'COO'},
+                {'node': 6, 'name': 'CEO'}
+            ],
+            links: [
+                {'source': 0, 'target': 1, 'value': 1000},
+                {'source': 0, 'target': 2, 'value': 200},
+                {'source': 0, 'target': 5, 'value': 10},
+                {'source': 1, 'target': 2, 'value': 500},
+                {'source': 1, 'target': 5, 'value': 2},
+                {'source': 2, 'target': 3, 'value': 200},
+                {'source': 2, 'target': 5, 'value': 50},
+                {'source': 3, 'target': 4, 'value': 100},
+                {'source': 3, 'target': 5, 'value': 125},
+                {'source': 4, 'target': 6, 'value': 100},
+                {'source': 5, 'target': 6, 'value': 100}
+            ]
+        };
+    }]);
+</script>
+</html>
