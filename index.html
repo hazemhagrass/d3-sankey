@@ -6,16 +6,19 @@
     <title>Sankey Particles</title>
 </head>
 <body>
-<canvas width="1000" height="1000"></canvas>
-<svg width="1000" height="1000"></svg>
+
+<div id="sankeyChart">
+    <canvas></canvas>
+    <svg></svg>
+</div>
 
 <script src="https://d3js.org/d3.v3.min.js" charset="utf-8" type="text/javascript"></script>
-<script src="https://npmcdn.com/babel-core@5.8.34/browser.min.js"></script>
 <script src="dist/d3.sankey.js" charset="utf-8" type="text/javascript"></script>
 
 <script type="text/javascript">
 
     var options = {
+        chart: '#sankeyChart',
         width: 960,
         height: 500,
         margin: {top: 1, right: 1, bottom: 6, left: 1}
@@ -44,7 +47,7 @@
         ]
     };
 
-    d3.sankeyChart(data, options);
+    let chart = new d3.sankeyChart(data, options);
 </script>
 </body>
 </html>

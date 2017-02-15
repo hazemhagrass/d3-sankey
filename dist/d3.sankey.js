@@ -1,4 +1,4 @@
-d3.sankey = function () {
+var sankeyCore = function () {
     var sankey = {},
         nodeWidth = 24,
         nodePadding = 8,
@@ -301,42 +301,44 @@ d3.sankey = function () {
 
 d3.sankeyChart = function (data, options) {
 
-    /* const canvas = */
-    d3.select('canvas')
+    var self = this;
+
+    self.margin = options.margin;
+    self.width = options.width;
+    self.height = options.height;
+    self.innerWidth = options.width - self.margin.left - self.margin.right;
+    self.innerHeight = options.height - self.margin.top - self.margin.bottom;
+
+    self.formatNumber = d3.format(',.0f');
+    self.format = d => `${self.formatNumber(d)}`;
+    self.color = d3.scale.category20();
+
+    const canvas = d3.select(options.chart + ' canvas')
+        .attr('width', self.width)
+        .attr('height', self.height)
         .style('position', 'absolute');
 
-    const margin = options.margin;
-    const width = options.width - margin.left - margin.right;
-    const height = options.height - margin.top - margin.bottom;
-
-    const formatNumber = d3.format(',.0f');
-    const format = d => `${formatNumber(d)}`;
-    const color = d3.scale.category20();
-
-    const svg = d3.select('svg')
+    const svg = d3.select(options.chart + ' svg')
         .style('position', 'absolute')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
+        .attr('width', self.width)
+        .attr('height', self.height)
         .append('g')
-        .attr('transform', `translate(${margin.left}, ${margin.top})`);
+        .attr('transform', `translate(${self.margin.left}, ${self.margin.top})`);
 
-    const sankey = d3.sankey()
+    var sankey = new sankeyCore()
         .nodeWidth(15)
         .nodePadding(10)
-        .size([width, height]);
+        .size([self.innerWidth, self.innerHeight]);
 
     const path = sankey.link();
 
-    /* let freqCounter = 1; */
-    graph = data;
-
     sankey
-        .nodes(graph.nodes)
-        .links(graph.links)
+        .nodes(data.nodes)
+        .links(data.links)
         .layout(32);
 
     const link = svg.append('g').selectAll('.link')
-        .data(graph.links)
+        .data(data.links)
         .enter().append('path')
         .attr('class', 'link')
         .attr('d', path)
@@ -359,10 +361,10 @@ d3.sankeyChart = function (data, options) {
         });
 
     link.append('title')
-        .text(d => `${d.source.name} → ${d.target.name}\n${format(d.value)}`);
+        .text(d => `${d.source.name} → ${d.target.name}\n${self.format(d.value)}`);
 
     const node = svg.append('g').selectAll('.node')
-        .data(graph.nodes)
+        .data(data.nodes)
         .enter().append('g')
         .attr('class', 'node')
         .attr('transform', d => `translate(${d.x}, ${d.y})`)
@@ -377,7 +379,7 @@ d3.sankeyChart = function (data, options) {
         .attr('height', d => d.dy)
         .attr('width', sankey.nodeWidth())
         .style('fill', d => {
-            d.color = color(d.name.replace(/ .*/, ''));
+            d.color = self.color(d.name.replace(/ .*/, ''));
             return d.color;
         })
         .style({
@@ -387,7 +389,7 @@ d3.sankeyChart = function (data, options) {
             'shape-rendering': 'crispEdges'
         })
         .append('title')
-        .text(d => `${d.name}\n${format(d.value)}`);
+        .text(d => `${d.name}\n${self.format(d.value)}`);
 
     node.append('text')
         .attr('x', -6)
@@ -400,18 +402,18 @@ d3.sankeyChart = function (data, options) {
             'text-shadow': '0 1px 0 #fff'
         })
         .text(d => d.name)
-        .filter(d => d.x < width / 2)
+        .filter(d => d.x < self.innerWidth / 2)
         .attr('x', 6 + sankey.nodeWidth())
         .attr('text-anchor', 'start');
 
     function dragmove(d) {
         d3.select(this)
-            .attr('transform', `translate(${d.x}, ${(d.y = Math.max(0, Math.min(height - d.dy, d3.event.y)))})`);
+            .attr('transform', `translate(${d.x}, ${(d.y = Math.max(0, Math.min(self.innerHeight - d.dy, d3.event.y)))})`);
         sankey.relayout();
         link.attr('d', path);
     }
 
-    const linkExtent = d3.extent(graph.links, d => d.value);
+    const linkExtent = d3.extent(data.links, d => d.value);
 
     const frequencyScale = d3.scale.linear()
         .domain(linkExtent)
@@ -422,7 +424,7 @@ d3.sankeyChart = function (data, options) {
         .domain(linkExtent)
         .range([1, 5]);
 
-    graph.links.forEach(currentLink => {
+    data.links.forEach(currentLink => {
         currentLink.freq = frequencyScale(currentLink.value);
         currentLink.particleSize = 2;
         currentLink.particleColor = d3.scale.linear().domain([0, 1])
