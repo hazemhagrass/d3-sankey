@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Sankey Particles</title>
+</head>
+<body>
+<canvas width="1000" height="1000"></canvas>
+<svg width="1000" height="1000"></svg>
+
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8" type="text/javascript"></script>
+<script src="https://npmcdn.com/babel-core@5.8.34/browser.min.js"></script>
+<script src="dist/d3.sankey.js" charset="utf-8" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+    var options = {
+        width: 960,
+        height: 500,
+        margin: {top: 1, right: 1, bottom: 6, left: 1}
+    };
+    var data = {
+        nodes: [
+            {'node': 0, 'name': 'Junior'},
+            {'node': 1, 'name': 'Mid Senior'},
+            {'node': 2, 'name': 'Senior'},
+            {'node': 3, 'name': 'Tech Lead'},
+            {'node': 4, 'name': 'CTO'},
+            {'node': 5, 'name': 'COO'},
+            {'node': 6, 'name': 'CEO'}
+        ],
+        links: [
+            {'source': 0, 'target': 1, 'value': 10},
+            {'source': 0, 'target': 5, 'value': 10},
+            {'source': 1, 'target': 2, 'value': 10},
+            {'source': 1, 'target': 5, 'value': 10},
+            {'source': 2, 'target': 3, 'value': 10},
+            {'source': 2, 'target': 5, 'value': 10},
+            {'source': 3, 'target': 4, 'value': 10},
+            {'source': 3, 'target': 5, 'value': 10},
+            {'source': 4, 'target': 6, 'value': 10},
+            {'source': 5, 'target': 6, 'value': 10}
+        ]
+    };
+
+    d3.sankeyChart(data, options);
+</script>
+</body>
+</html>
