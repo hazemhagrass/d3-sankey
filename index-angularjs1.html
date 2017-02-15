@@ -13,24 +13,10 @@
            data-source="{{data}}"></ng-sankey>
 </body>
 
+<script src="dist/d3.sankey.directive.js" charset="utf-8" type="text/javascript"></script>
 <script>
     var app = angular.module('SankeyApp', []);
-
-    app.directive('ngSankey', function () {
-        let id = 'ng-sankey-' + parseInt(Math.random() * 1000);
-        let chart, data, options = null;
-        return {
-            restrict: 'E',
-            template: '<div id="' + id + '"><canvas></canvas><svg></svg></div>',
-            link: function (scope, iElement, iAttrs) {
-                options = JSON.parse(iAttrs.options);
-                options.chart = '#' + id;
-
-                data = JSON.parse(iAttrs.source);
-                chart = new d3.sankeyChart(data, options);
-            }
-        }
-    });
+    initNGSankey(app);
 
     app.controller('MainController', ['$scope', function ($scope) {
         $scope.options = {
