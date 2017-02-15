@@ -313,98 +313,191 @@ d3.sankeyChart = function (data, options) {
     self.format = d => `${self.formatNumber(d)}`;
     self.color = d3.scale.category20();
 
-    const canvas = d3.select(options.chart + ' canvas')
-        .attr('width', self.width)
-        .attr('height', self.height)
-        .style('position', 'absolute');
+    let canvas, svg, sankey, link, path, node = null;
 
-    const svg = d3.select(options.chart + ' svg')
-        .style('position', 'absolute')
-        .attr('width', self.width)
-        .attr('height', self.height)
-        .append('g')
-        .attr('transform', `translate(${self.margin.left}, ${self.margin.top})`);
+    self.initContainers = function () {
+        canvas = d3.select(options.chart + ' canvas')
+            .attr('width', self.width)
+            .attr('height', self.height)
+            .style('position', 'absolute');
 
-    var sankey = new sankeyCore()
-        .nodeWidth(15)
-        .nodePadding(10)
-        .size([self.innerWidth, self.innerHeight]);
+        svg = d3.select(options.chart + ' svg')
+            .style('position', 'absolute')
+            .attr('width', self.width)
+            .attr('height', self.height)
+            .append('g')
+            .attr('transform', `translate(${self.margin.left}, ${self.margin.top})`);
+    };
+    self.initCore = function () {
+        sankey = new sankeyCore()
+            .nodeWidth(15)
+            .nodePadding(10)
+            .size([self.innerWidth, self.innerHeight]);
 
-    const path = sankey.link();
+        sankey
+            .nodes(data.nodes)
+            .links(data.links)
+            .layout(32);
+    };
 
-    sankey
-        .nodes(data.nodes)
-        .links(data.links)
-        .layout(32);
+    self.renderLinks = function () {
+        path = sankey.link();
+        link = svg.append('g').selectAll('.link')
+            .data(data.links)
+            .enter().append('path')
+            .attr('class', 'link')
+            .attr('d', path)
+            .style('stroke-width', d => Math.max(1, d.dy))
+            .style({
+                fill: 'none',
+                stroke: '#000',
+                'stroke-opacity': 0.15
+            })
+            .sort((a, b) => b.dy - a.dy);
 
-    const link = svg.append('g').selectAll('.link')
-        .data(data.links)
-        .enter().append('path')
-        .attr('class', 'link')
-        .attr('d', path)
-        .style('stroke-width', d => Math.max(1, d.dy))
-        .style({
-            fill: 'none',
-            stroke: '#000',
-            'stroke-opacity': 0.15
-        })
-        .sort((a, b) => b.dy - a.dy)
+        link
+            .on('mouseover', function () {
+                d3.select(this)
+                    .style('stroke-opacity', 0.25);
+            })
+            .on('mouseout', function () {
+                d3.select(this)
+                    .style('stroke-opacity', 0.15);
+            });
 
-    link
-        .on('mouseover', function () {
-            d3.select(this)
-                .style('stroke-opacity', 0.25);
-        })
-        .on('mouseout', function () {
-            d3.select(this)
-                .style('stroke-opacity', 0.15);
+        link.append('title')
+            .text(d => `${d.source.name} → ${d.target.name}\n${self.format(d.value)}`);
+    };
+
+    self.renderNodes = function () {
+        node = svg.append('g').selectAll('.node')
+            .data(data.nodes)
+            .enter().append('g')
+            .attr('class', 'node')
+            .attr('transform', d => `translate(${d.x}, ${d.y})`)
+            .call(d3.behavior.drag()
+                .origin(d => d)
+                .on('dragstart', function () {
+                    this.parentNode.appendChild(this);
+                })
+                .on('drag', dragmove));
+
+        node.append('rect')
+            .attr('height', d => d.dy)
+            .attr('width', sankey.nodeWidth())
+            .style('fill', d => {
+                d.color = self.color(d.name.replace(/ .*/, ''));
+                return d.color;
+            })
+            .style({
+                stroke: 'none',
+                cursor: 'move',
+                'fill-opacity': 0.9,
+                'shape-rendering': 'crispEdges'
+            })
+            .append('title')
+            .text(d => `${d.name}\n${self.format(d.value)}`);
+
+        node.append('text')
+            .attr('x', -6)
+            .attr('y', d => d.dy / 2)
+            .attr('dy', '.35em')
+            .attr('text-anchor', 'end')
+            .attr('transform', null)
+            .style({
+                'pointer-events': 'none',
+                'text-shadow': '0 1px 0 #fff'
+            })
+            .text(d => d.name)
+            .filter(d => d.x < self.innerWidth / 2)
+            .attr('x', 6 + sankey.nodeWidth())
+            .attr('text-anchor', 'start');
+    };
+
+    self.renderTrafficInLinks = function () {
+        const linkExtent = d3.extent(data.links, d => d.value);
+
+        const frequencyScale = d3.scale.linear()
+            .domain(linkExtent)
+            .range([0.05, 1]);
+
+        /* const particleSize = */
+        d3.scale.linear()
+            .domain(linkExtent)
+            .range([1, 5]);
+
+        data.links.forEach(currentLink => {
+            currentLink.freq = frequencyScale(currentLink.value);
+            currentLink.particleSize = 2;
+            currentLink.particleColor = d3.scale.linear().domain([0, 1])
+                .range([currentLink.source.color, currentLink.target.color]);
         });
 
-    link.append('title')
-        .text(d => `${d.source.name} → ${d.target.name}\n${self.format(d.value)}`);
+        /* const t = */
+        d3.timer(tick, 1000);
+        let particles = [];
 
-    const node = svg.append('g').selectAll('.node')
-        .data(data.nodes)
-        .enter().append('g')
-        .attr('class', 'node')
-        .attr('transform', d => `translate(${d.x}, ${d.y})`)
-        .call(d3.behavior.drag()
-            .origin(d => d)
-            .on('dragstart', function () {
-                this.parentNode.appendChild(this);
-            })
-            .on('drag', dragmove));
+        function tick(elapsed /* , time */) {
+            particles = particles.filter(d => d.current < d.path.getTotalLength());
 
-    node.append('rect')
-        .attr('height', d => d.dy)
-        .attr('width', sankey.nodeWidth())
-        .style('fill', d => {
-            d.color = self.color(d.name.replace(/ .*/, ''));
-            return d.color;
-        })
-        .style({
-            stroke: 'none',
-            cursor: 'move',
-            'fill-opacity': 0.9,
-            'shape-rendering': 'crispEdges'
-        })
-        .append('title')
-        .text(d => `${d.name}\n${self.format(d.value)}`);
+            d3.selectAll('path.link')
+                .each(
+                    function (d) {
+                        //        if (d.freq < 1) {
+                        for (let x = 0; x < 2; x++) {
+                            const offset = (Math.random() - 0.5) * (d.dy - 4);
+                            if (Math.random() < d.freq) {
+                                const length = this.getTotalLength();
+                                particles.push({
+                                    link: d,
+                                    time: elapsed,
+                                    offset,
+                                    path: this,
+                                    length,
+                                    animateTime: length,
+                                    speed: 0.5 + (Math.random())
+                                });
+                            }
+                        }
+                    });
 
-    node.append('text')
-        .attr('x', -6)
-        .attr('y', d => d.dy / 2)
-        .attr('dy', '.35em')
-        .attr('text-anchor', 'end')
-        .attr('transform', null)
-        .style({
-            'pointer-events': 'none',
-            'text-shadow': '0 1px 0 #fff'
-        })
-        .text(d => d.name)
-        .filter(d => d.x < self.innerWidth / 2)
-        .attr('x', 6 + sankey.nodeWidth())
-        .attr('text-anchor', 'start');
+            particleEdgeCanvasPath(elapsed);
+        }
+
+        function particleEdgeCanvasPath(elapsed) {
+            const context = d3.select('canvas').node().getContext('2d');
+
+            context.clearRect(0, 0, 1000, 1000);
+
+            context.fillStyle = 'gray';
+            context.lineWidth = '1px';
+            for (const x in particles) {
+                if ({}.hasOwnProperty.call(particles, x)) {
+                    const currentTime = elapsed - particles[x].time;
+                    //        let currentPercent = currentTime / 1000 * particles[x].path.getTotalLength();
+                    particles[x].current = currentTime * 0.15 * particles[x].speed;
+                    const currentPos = particles[x].path.getPointAtLength(particles[x].current);
+                    context.beginPath();
+                    context.fillStyle = particles[x].link.particleColor(0);
+                    context.arc(
+                        currentPos.x,
+                        currentPos.y + particles[x].offset,
+                        particles[x].link.particleSize,
+                        0,
+                        2 * Math.PI
+                    );
+                    context.fill();
+                }
+            }
+        }
+    };
+
+    self.initContainers();
+    self.initCore();
+    self.renderLinks();
+
+    self.renderNodes();
+    self.renderTrafficInLinks();
 
     function dragmove(d) {
         d3.select(this)
@@ -413,86 +506,5 @@ d3.sankeyChart = function (data, options) {
         link.attr('d', path);
     }
 
-    const linkExtent = d3.extent(data.links, d => d.value);
 
-    const frequencyScale = d3.scale.linear()
-        .domain(linkExtent)
-        .range([0.05, 1]);
-
-    /* const particleSize = */
-    d3.scale.linear()
-        .domain(linkExtent)
-        .range([1, 5]);
-
-    data.links.forEach(currentLink => {
-        currentLink.freq = frequencyScale(currentLink.value);
-        currentLink.particleSize = 2;
-        currentLink.particleColor = d3.scale.linear().domain([0, 1])
-            .range([currentLink.source.color, currentLink.target.color]);
-    });
-
-    /* const t = */
-    d3.timer(tick, 1000);
-    let particles = [];
-
-    function tick(elapsed /* , time */) {
-        particles = particles.filter(d => d.current < d.path.getTotalLength());
-
-        d3.selectAll('path.link')
-            .each(
-                function (d) {
-                    //        if (d.freq < 1) {
-                    for (let x = 0; x < 2; x++) {
-                        const offset = (Math.random() - 0.5) * (d.dy - 4);
-                        if (Math.random() < d.freq) {
-                            const length = this.getTotalLength();
-                            particles.push({
-                                link: d,
-                                time: elapsed,
-                                offset,
-                                path: this,
-                                length,
-                                animateTime: length,
-                                speed: 0.5 + (Math.random())
-                            });
-                        }
-                    }
-                    //        }
-                    /*        else {
-                     for (let x = 0; x<d.freq; x++) {
-                     let offset = (Math.random() - .5) * d.dy;
-                     particles.push({link: d, time: elapsed, offset: offset, path: this})
-                     }
-                     } */
-                });
-
-        particleEdgeCanvasPath(elapsed);
-    }
-
-    function particleEdgeCanvasPath(elapsed) {
-        const context = d3.select('canvas').node().getContext('2d');
-
-        context.clearRect(0, 0, 1000, 1000);
-
-        context.fillStyle = 'gray';
-        context.lineWidth = '1px';
-        for (const x in particles) {
-            if ({}.hasOwnProperty.call(particles, x)) {
-                const currentTime = elapsed - particles[x].time;
-                //        let currentPercent = currentTime / 1000 * particles[x].path.getTotalLength();
-                particles[x].current = currentTime * 0.15 * particles[x].speed;
-                const currentPos = particles[x].path.getPointAtLength(particles[x].current);
-                context.beginPath();
-                context.fillStyle = particles[x].link.particleColor(0);
-                context.arc(
-                    currentPos.x,
-                    currentPos.y + particles[x].offset,
-                    particles[x].link.particleSize,
-                    0,
-                    2 * Math.PI
-                );
-                context.fill();
-            }
-        }
-    }
 }
