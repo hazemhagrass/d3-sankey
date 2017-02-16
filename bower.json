@@ -1,0 +1,23 @@
+{
+  "name": "angular-d3-sankey",
+  "homepage": "https://github.com/hazemhagrass/d3-sankey",
+  "authors": [
+    "Hazem Hagrass<hazem.hagrass@gmail.com>"
+  ],
+  "description": "",
+  "main": [
+    "dist/d3.sankey.js",
+    "dist/d3.sankey.directive.js"
+  ],
+  "dependencies": {
+    "angular": "^1.x",
+    "d3": "^3.3.13"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
