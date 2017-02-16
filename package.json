@@ -1,0 +1,24 @@
+{
+  "name": "@sankeyjs/d3-sankey",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/d3.sankey.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hazemhagrass/d3-sankey.git"
+  },
+  "keywords": [
+    "sankey",
+    "sankeyjs",
+    "chart"
+  ],
+  "author": "Hazem Hagrass",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hazemhagrass/d3-sankey/issues"
+  },
+  "homepage": "https://github.com/hazemhagrass/d3-sankey#readme"
+}
