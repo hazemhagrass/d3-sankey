@@ -1,5 +1,5 @@
 {
-  "name": "@sankeyjs/d3-sankey",
+  "name": "sankeyjs",
   "version": "1.0.0",
   "description": "",
   "main": "dist/d3.sankey.js",
