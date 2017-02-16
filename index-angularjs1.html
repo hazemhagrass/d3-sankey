@@ -9,14 +9,12 @@
     <script src="dist/d3.sankey.js" charset="utf-8" type="text/javascript"></script>
 </head>
 <body ng-app="SankeyApp" ng-controller="MainController">
-<ng-sankey id="sankeyChart" data-options="{{options}}"
-           data-source="{{data}}"></ng-sankey>
+<ng-sankey id="sankeyChart" options="options" data="data"></ng-sankey>
 </body>
 
 <script src="dist/d3.sankey.directive.js" charset="utf-8" type="text/javascript"></script>
 <script>
-    var app = angular.module('SankeyApp', []);
-    initNGSankey(app);
+    var app = angular.module('SankeyApp', ['ngSankey']);
 
     app.controller('MainController', ['$scope', function ($scope) {
         $scope.options = {
