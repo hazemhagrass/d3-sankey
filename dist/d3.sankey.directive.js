@@ -10,6 +10,7 @@ angular.module('ngSankey', []).directive('ngSankey', function () {
         },
         controller: ["$scope", "$timeout", function ($scope, $timeout) {
             var chart = '';
+            $scope.$watch("data", function (data) {
                 if(!$scope.data || !$scope.data.nodes.length)
                     d3.select('#' + id + ' svg').append("text")
                         .attr("class", "nvd3 nv-noData")
