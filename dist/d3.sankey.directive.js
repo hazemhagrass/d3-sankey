@@ -11,8 +11,15 @@ angular.module('ngSankey', []).directive('ngSankey', function () {
         controller: ["$scope", "$timeout", function ($scope, $timeout) {
             var chart = '';
             $scope.$watch("data", function (data) {
-                if(!$scope.data)
-                    return;
+                if(!$scope.data || !$scope.data.nodes.length)
+                    d3.select('#' + id + ' svg').append("text")
+                        .attr("class", "nvd3 nv-noData")
+                        .attr("transform", "translate(507, 250)")
+                        .attr("text-anchor", "middle")
+                        .attr("opacity", 1)
+                        .text("No Data Available.");
+                else
+                    d3.select('#' + id + ' svg text.nv-noData').attr("opacity", 0);
 
                 if(chart){
                     d3.selectAll('#' + id + ' svg g').remove();
