@@ -1,7 +1,7 @@
 {
   "name": "sankeyjs",
   "homepage": "https://github.com/hazemhagrass/d3-sankey",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "authors": [
     "Hazem Hagrass<hazem.hagrass@gmail.com>"
   ],
