@@ -474,28 +474,30 @@ d3.sankeyChart = function (data, options) {
         }
 
         function particleEdgeCanvasPath(elapsed) {
-            const context = d3.select('canvas').node().getContext('2d');
+            if(d3.select('canvas').node()){
+                const context = d3.select('canvas').node().getContext('2d');
 
-            context.clearRect(0, 0, 1000, 1000);
+                context.clearRect(0, 0, 1000, 1000);
 
-            context.fillStyle = 'gray';
-            context.lineWidth = '1px';
-            for (const x in particles) {
-                if ({}.hasOwnProperty.call(particles, x)) {
-                    const currentTime = elapsed - particles[x].time;
-                    //        let currentPercent = currentTime / 1000 * particles[x].path.getTotalLength();
-                    particles[x].current = currentTime * 0.15 * particles[x].speed;
-                    const currentPos = particles[x].path.getPointAtLength(particles[x].current);
-                    context.beginPath();
-                    context.fillStyle = particles[x].link.particleColor(0);
-                    context.arc(
-                        currentPos.x,
-                        currentPos.y + particles[x].offset,
-                        particles[x].link.particleSize,
-                        0,
-                        2 * Math.PI
-                    );
-                    context.fill();
+                context.fillStyle = 'gray';
+                context.lineWidth = '1px';
+                for (const x in particles) {
+                    if ({}.hasOwnProperty.call(particles, x)) {
+                        const currentTime = elapsed - particles[x].time;
+                        //        let currentPercent = currentTime / 1000 * particles[x].path.getTotalLength();
+                        particles[x].current = currentTime * 0.15 * particles[x].speed;
+                        const currentPos = particles[x].path.getPointAtLength(particles[x].current);
+                        context.beginPath();
+                        context.fillStyle = particles[x].link.particleColor(0);
+                        context.arc(
+                            currentPos.x,
+                            currentPos.y + particles[x].offset,
+                            particles[x].link.particleSize,
+                            0,
+                            2 * Math.PI
+                        );
+                        context.fill();
+                    }
                 }
             }
         }
