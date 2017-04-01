@@ -303,8 +303,8 @@ d3.sankeyChart = function (data, options) {
 
     var self = this;
 
-    self.nodeWidth = options.nodeWidth ? options.nodeWidth : 15;
-    self.nodePadding = options.nodePadding ? options.nodePadding : 10;
+    self.nodeWidth = options.node && options.node.width ? options.node.width : 15;
+    self.nodePadding = options.node && options.node.padding ? options.node.padding : 10;
 
     self.margin = options.margin;
     self.width = options.width;
@@ -313,8 +313,15 @@ d3.sankeyChart = function (data, options) {
     self.innerHeight = options.height - self.margin.top - self.margin.bottom;
     self.dynamicLinkColor = options.dynamicLinkColor ? options.dynamicLinkColor : false;
     self.staticLinkColor = options.staticLinkColor ? options.staticLinkColor : '#000';
-    self.formatNumber = d3.format(',.0f');
-    self.format = d => `${self.formatNumber(d)}`;
+    self.trafficInLinks = options.trafficInLinks ? options.trafficInLinks : false;
+    var valueFormat = options.value && options.value.format ? options.value.format : ',.0f';
+    self.formatNumber = d3.format(valueFormat);
+    var valueUnit = options.value && options.value.unit ? options.value.unit : '';
+    self.format = d => `${self.formatNumber(d)}` + valueUnit;
+    self.nodeText = d => d.name;
+    if (options.node && options.node.showValue) {
+        self.nodeText = d => d.name + ' : ' + self.format(d.value);
+    }
     self.color = d3.scale.category20();
 
     let canvas, svg, sankey, link, path, node = null;
@@ -417,7 +424,7 @@ d3.sankeyChart = function (data, options) {
                 'pointer-events': 'none',
                 'text-shadow': '0 1px 0 #fff'
             })
-            .text(d => d.name)
+            .text(d => self.nodeText(d))
             .filter(d => d.x < self.innerWidth / 2)
             .attr('x', 6 + sankey.nodeWidth())
             .attr('text-anchor', 'start');
@@ -508,7 +515,9 @@ d3.sankeyChart = function (data, options) {
     self.renderLinks();
 
     self.renderNodes();
-    self.renderTrafficInLinks();
+    if (self.trafficInLinks) {
+        self.renderTrafficInLinks();
+    }
 
     function dragmove(d) {
         d3.select(this)
