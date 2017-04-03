@@ -27,11 +27,12 @@ var options = {
         chart: '#sankeyChart',
         width: 960,
         height: 500,
-        nodeWidth: 15,
-        nodePadding: 10,
+        node: {width: 15, padding :10, showValue: false},
+        value: {format: ',.0f', unit : ''},
         //DYNAMIC LINK COLOR WILL OVERWRITE STATIC COLOR IF EXISTS
         dynamicLinkColor: true,
         //staticLinkColor: 'rgb(230, 14, 14)',
+        trafficInLinks: true,
         margin: {top: 1, right: 1, bottom: 6, left: 1}
     };
     var data = {
