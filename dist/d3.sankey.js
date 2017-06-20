@@ -481,10 +481,12 @@ d3.sankeyChart = function (data, options) {
         }
 
         function particleEdgeCanvasPath(elapsed) {
-            if(d3.select('canvas').node()){
-                const context = d3.select('canvas').node().getContext('2d');
+            if(d3.select('ng-sankey div canvas').node()){
+                const context = d3.select('ng-sankey div canvas').node().getContext('2d');
 
-                context.clearRect(0, 0, 1000, 1000);
+                var canvasWidth = self.width ? self.width : 1000;
+                var canvasHeight = self.height ? self.height : 1000;
+                context.clearRect(0, 0, canvasWidth, canvasHeight);
 
                 context.fillStyle = 'gray';
                 context.lineWidth = '1px';
