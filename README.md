@@ -11,10 +11,20 @@ This Plugin is inspired from rCharts [Examples](https://bl.ocks.org/rogerfischer
 * **width**: chart width
 * **height**: chart height
 * **margin**: chart margins
-* **nodeWidth**: node width inside Sankey chart.
-* **nodePadding**: node padding inside Sankey chart.
+  * **top**: top margin
+  * **right**: right margin
+  * **bottom**: bottom margin
+  * **left**: left margin
+* **node**: node options inside Sankey chart.
+  * **width**: node width
+  * **padding**: node padding
+  * **showValue**: set showing value
+* **value**: value options inside Sankey chart.
+  * **format**: value format(d3.format)
+  * **unit**: value unit
 * **dynamicLinkColor**: set links background color dynamically according to link source.
-* **staticLinkColor**: set links background color statically, this value will not be used in case of using **dynamicLinkColor** options 
+* **staticLinkColor**: set links background color statically, this value will not be used in case of using **dynamicLinkColor** options.
+* **trafficInLinks**: set showing traffic animation in links.
 ## JS Usage
 ```html
 <div id="sankeyChart">
@@ -27,13 +37,13 @@ var options = {
         chart: '#sankeyChart',
         width: 960,
         height: 500,
+        margin: {top: 1, right: 1, bottom: 6, left: 1},
         node: {width: 15, padding :10, showValue: false},
         value: {format: ',.0f', unit : ''},
         //DYNAMIC LINK COLOR WILL OVERWRITE STATIC COLOR IF EXISTS
         dynamicLinkColor: true,
         //staticLinkColor: 'rgb(230, 14, 14)',
-        trafficInLinks: true,
-        margin: {top: 1, right: 1, bottom: 6, left: 1}
+        trafficInLinks: true
     };
     var data = {
         nodes: [
@@ -73,10 +83,11 @@ var options = {
         $scope.options = {
             width: 960,
             height: 500,
-            nodeWidth: 15,
-            nodePadding: 10,
+            margin: {top: 1, right: 1, bottom: 6, left: 1},
+            node: {width: 15, padding :10, showValue: false},
+            value: {format: ',.0f', unit : ''},
             dynamicLinkColor: true,
-            margin: {top: 1, right: 1, bottom: 6, left: 1}
+            trafficInLinks: true
         };
         $scope.data = {
             nodes: [
